@@ -1,19 +1,31 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from __future__ import annotations
+
 from typing import Dict, List, Tuple, Optional
 import logging
 import math
 
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+except Exception:  # pragma: no cover - runtime import guard
+    torch = None
+    nn = None
+    F = None
+
+TORCH_AVAILABLE = torch is not None and nn is not None
+
 logger = logging.getLogger(__name__)
 
-class DynamicRiskPropagation(nn.Module):
+class DynamicRiskPropagation(nn.Module if TORCH_AVAILABLE else object):
     """
     Dynamic Risk Propagation Algorithm (DRPA)
     Quantifies and propagates organizational risk in real-time
     """
     
     def __init__(self, config: Dict):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("DynamicRiskPropagation requires PyTorch. Install torch to use this component.")
         super().__init__()
         self.config = config
         

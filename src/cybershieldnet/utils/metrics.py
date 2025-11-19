@@ -1,9 +1,17 @@
-import torch
+from __future__ import annotations
+
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import logging
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score, accuracy_score
 from sklearn.metrics import confusion_matrix, classification_report
+
+try:
+    import torch
+except Exception:  # pragma: no cover - runtime import guard
+    torch = None
+
+TORCH_AVAILABLE = torch is not None
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +21,8 @@ class ThreatDetectionMetrics:
     """
     
     def __init__(self, config: Dict):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("ThreatDetectionMetrics requires PyTorch. Install torch to compute metrics.")
         self.config = config
         self.metrics_history = {}
         

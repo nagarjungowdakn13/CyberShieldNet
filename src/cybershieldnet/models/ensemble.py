@@ -1,17 +1,28 @@
-import torch
-import torch.nn as nn
+from __future__ import annotations
+
 from typing import List, Dict, Optional
 import logging
 
+try:
+    import torch
+    import torch.nn as nn
+except Exception:  # pragma: no cover - runtime import guard
+    torch = None
+    nn = None
+
+TORCH_AVAILABLE = torch is not None and nn is not None
+
 logger = logging.getLogger(__name__)
 
-class AdaptiveEnsemble(nn.Module):
+class AdaptiveEnsemble(nn.Module if TORCH_AVAILABLE else object):
     """
     Adaptive ensemble learning for threat prediction
     Dynamically adjusts model weights based on performance
     """
 
     def __init__(self, config: Dict):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("AdaptiveEnsemble requires PyTorch. Install torch to use this component.")
         super().__init__()
         self.config = config
         
@@ -90,12 +101,14 @@ class AdaptiveEnsemble(nn.Module):
         
         return performances
 
-class DiversityEnsemble(nn.Module):
+class DiversityEnsemble(nn.Module if TORCH_AVAILABLE else object):
     """
     Ensemble with diversity promotion for adversarial robustness
     """
 
     def __init__(self, config: Dict):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("DiversityEnsemble requires PyTorch. Install torch to use this component.")
         super().__init__()
         self.config = config
         self.diversity_weight = config.get('diversity_weight', 0.1)
@@ -132,8 +145,10 @@ class DiversityEnsemble(nn.Module):
 
     def _create_residual_model(self) -> nn.Module:
         """Create a model with residual connections"""
-        class ResidualBlock(nn.Module):
+        class ResidualBlock(nn.Module if TORCH_AVAILABLE else object):
             def __init__(self, features):
+                if not TORCH_AVAILABLE:
+                    raise RuntimeError("ResidualBlock requires PyTorch. Install torch to use this component.")
                 super().__init__()
                 self.linear1 = nn.Linear(features, features)
                 self.linear2 = nn.Linear(features, features)

@@ -8,7 +8,14 @@ to provide a simple command-line training entrypoint.
 import argparse
 import logging
 from pathlib import Path
-import torch
+import pickle
+
+try:
+    import torch
+except Exception:  # pragma: no cover - runtime import guard
+    torch = None
+
+TORCH_AVAILABLE = torch is not None
 
 from cybershieldnet.core.base_model import CyberShieldNet
 from cybershieldnet.utils.helpers import ConfigManager, DataLoader, ModelCheckpoint
@@ -17,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 
 def _make_dummy_loader(batch_size: int, num_batches: int = 10):
+    if not TORCH_AVAILABLE:
+        raise RuntimeError("Dummy loader requires PyTorch. Install torch or rely on fallback training.")
     # Create a tiny synthetic dataset to allow quick smoke runs
     class DummyDataset(torch.utils.data.Dataset):
         def __len__(self):
@@ -37,6 +46,9 @@ def _make_dummy_loader(batch_size: int, num_batches: int = 10):
 
 
 def run_training(config_dir: str = 'config', epochs: int = None, model_out: str = 'models/cybershieldnet.pth'):
+    if not TORCH_AVAILABLE:
+        logger.warning("PyTorch not available. Running fallback sklearn training instead.")
+        return _run_fallback_training(model_out)
     cfg_mgr = ConfigManager(config_dir)
     try:
         train_cfg = cfg_mgr.get_config('training_config')
@@ -80,6 +92,29 @@ def run_training(config_dir: str = 'config', epochs: int = None, model_out: str 
     ckpt.save_checkpoint(model, optimizer, epoch=epochs, metrics={'train_loss': history.get('train_loss')})
 
     logger.info(f"Training completed. Model saved to {outp}")
+    return str(outp)
+
+
+def _run_fallback_training(model_out: str) -> str:
+    try:
+        import numpy as np
+        from sklearn.linear_model import LogisticRegression
+    except Exception as exc:  # pragma: no cover - requires optional deps
+        raise RuntimeError(
+            "Fallback training requires numpy and scikit-learn. Install them or install torch for full training.") from exc
+
+    X = np.random.randn(256, 32)
+    y = (np.random.rand(256) > 0.5).astype(int)
+
+    clf = LogisticRegression(max_iter=200)
+    clf.fit(X, y)
+
+    outp = Path(model_out).with_suffix('.pkl')
+    outp.parent.mkdir(parents=True, exist_ok=True)
+    with open(outp, 'wb') as fh:
+        pickle.dump({'model': clf, 'note': 'Fallback sklearn classifier'}, fh)
+
+    logger.info(f"Fallback sklearn model saved to {outp}")
     return str(outp)
 
 

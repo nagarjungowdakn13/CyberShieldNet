@@ -1,9 +1,18 @@
-import torch
-import torch.nn as nn
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 import logging
 import os
 from pathlib import Path
+
+try:
+    import torch
+    import torch.nn as nn
+except Exception:  # pragma: no cover - runtime import guard
+    torch = None
+    nn = None
+
+TORCH_AVAILABLE = torch is not None and nn is not None
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +41,8 @@ class ModelManager:
 
     def save_model(self, model_name: str, path: Optional[str] = None):
         """Save a model to disk"""
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("Model saving requires PyTorch. Install torch to save models.")
         if model_name not in self.model_registry:
             raise ValueError(f"Model {model_name} not found in registry")
         
@@ -49,6 +60,8 @@ class ModelManager:
 
     def load_model(self, model_name: str, path: str) -> nn.Module:
         """Load a model from disk"""
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("Model loading requires PyTorch. Install torch to load models.")
         if not os.path.exists(path):
             raise FileNotFoundError(f"Model file {path} not found")
         
@@ -66,6 +79,8 @@ class ModelManager:
 
     def _reconstruct_model(self, metadata: Dict) -> nn.Module:
         """Reconstruct model architecture from metadata"""
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("Model reconstruction requires PyTorch. Install torch to reconstruct models.")
         # This would need to be implemented based on your model serialization strategy
         # For now, return a placeholder
         return nn.Sequential(
@@ -112,6 +127,8 @@ class ModelManager:
 
     def export_model(self, model_name: str, export_format: str = 'onnx') -> str:
         """Export model to different formats"""
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("Model export requires PyTorch. Install torch to export models.")
         if model_name not in self.model_registry:
             raise ValueError(f"Model {model_name} not found in registry")
         
@@ -124,6 +141,8 @@ class ModelManager:
 
     def _export_to_onnx(self, model: nn.Module, model_name: str) -> str:
         """Export model to ONNX format"""
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("ONNX export requires PyTorch. Install torch to export models.")
         # Create dummy input
         dummy_input = torch.randn(1, 64)  # Adjust based on your model input
         

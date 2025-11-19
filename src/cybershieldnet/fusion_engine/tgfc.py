@@ -1,18 +1,30 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from typing import Dict, Tuple, Optional
+from __future__ import annotations
+
+from typing import Dict, Tuple, Optional, List
 import logging
+
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+except Exception:  # pragma: no cover - runtime import guard
+    torch = None
+    nn = None
+    F = None
+
+TORCH_AVAILABLE = torch is not None and nn is not None
 
 logger = logging.getLogger(__name__)
 
-class TemporalGraphFusion(nn.Module):
+class TemporalGraphFusion(nn.Module if TORCH_AVAILABLE else object):
     """
     Temporal-Graph Convolutional Fusion (TGCF) mechanism
     Combines temporal patterns with structural dependencies
     """
     
     def __init__(self, config: Dict):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("TemporalGraphFusion requires PyTorch. Install torch to use this component.")
         super().__init__()
         self.config = config
         
@@ -58,10 +70,12 @@ class TemporalGraphFusion(nn.Module):
         
         return fused_features
 
-class GraphConvolution(nn.Module):
+class GraphConvolution(nn.Module if TORCH_AVAILABLE else object):
     """Graph convolutional network for structural feature extraction"""
     
     def __init__(self, hidden_dims: List[int], dropout_rate: float):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("GraphConvolution requires PyTorch. Install torch to use this component.")
         super().__init__()
         
         self.layers = nn.ModuleList()
@@ -90,10 +104,12 @@ class GraphConvolution(nn.Module):
         
         return x
 
-class GCNLayer(nn.Module):
+class GCNLayer(nn.Module if TORCH_AVAILABLE else object):
     """Single graph convolution layer"""
     
     def __init__(self, in_features: int, out_features: int, dropout_rate: float):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("GCNLayer requires PyTorch. Install torch to use this component.")
         super().__init__()
         
         self.linear = nn.Linear(in_features, out_features)
@@ -112,10 +128,12 @@ class GCNLayer(nn.Module):
         
         return x
 
-class GraphAttention(nn.Module):
+class GraphAttention(nn.Module if TORCH_AVAILABLE else object):
     """Graph attention mechanism for node importance weighting"""
     
     def __init__(self, feature_dim: int):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("GraphAttention requires PyTorch. Install torch to use this component.")
         super().__init__()
         
         self.attention_linear = nn.Linear(feature_dim, 1)
@@ -132,10 +150,12 @@ class GraphAttention(nn.Module):
         
         return x_attended
 
-class TemporalModel(nn.Module):
+class TemporalModel(nn.Module if TORCH_AVAILABLE else object):
     """Temporal modeling with LSTM"""
     
     def __init__(self, hidden_size: int, num_layers: int, dropout_rate: float):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("TemporalModel requires PyTorch. Install torch to use this component.")
         super().__init__()
         
         self.lstm = nn.LSTM(
@@ -160,10 +180,12 @@ class TemporalModel(nn.Module):
         
         return self.dropout(temporal_features)
 
-class TemporalAttention(nn.Module):
+class TemporalAttention(nn.Module if TORCH_AVAILABLE else object):
     """Temporal attention mechanism"""
     
     def __init__(self, feature_dim: int):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("TemporalAttention requires PyTorch. Install torch to use this component.")
         super().__init__()
         
         self.attention_linear = nn.Linear(feature_dim, 1)
@@ -180,10 +202,12 @@ class TemporalAttention(nn.Module):
         
         return attended_sequence
 
-class FusionLayer(nn.Module):
+class FusionLayer(nn.Module if TORCH_AVAILABLE else object):
     """Feature fusion layer combining graph, temporal, and behavioral features"""
     
     def __init__(self, graph_dim: int, temporal_dim: int, behavioral_dim: Optional[int] = None):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("FusionLayer requires PyTorch. Install torch to use this component.")
         super().__init__()
         
         self.graph_projection = nn.Linear(graph_dim, 128)

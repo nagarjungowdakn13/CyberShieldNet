@@ -1,18 +1,36 @@
-import torch
-import torch.nn as nn
-from typing import Dict, List, Optional, Tuple
+from __future__ import annotations
+
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 import yaml
 import logging
 from pathlib import Path
 
+try:
+    import torch
+    import torch.nn as nn
+except Exception:  # pragma: no cover - runtime import guard
+    torch = None
+    nn = None
+
+if TYPE_CHECKING:
+    from torch import Tensor  # type: ignore
+else:
+    Tensor = None
+
+TORCH_AVAILABLE = torch is not None and nn is not None
+
 logger = logging.getLogger(__name__)
 
-class CyberShieldNet(nn.Module):
+class CyberShieldNet(nn.Module if TORCH_AVAILABLE else object):
     """
     Main CyberShieldNet model integrating all components
     """
     
     def __init__(self, config_path: Optional[str] = None):
+        if not TORCH_AVAILABLE:
+            raise RuntimeError(
+                "CyberShieldNet requires PyTorch. Install torch to use this model.")
+
         super().__init__()
         
         # Load configuration
@@ -41,9 +59,9 @@ class CyberShieldNet(nn.Module):
     
     def forward(self, 
                 graph_data: Dict,
-                temporal_data: torch.Tensor,
-                behavioral_data: torch.Tensor,
-                context_data: Dict) -> Tuple[torch.Tensor, torch.Tensor]:
+                temporal_data: "Tensor",
+                behavioral_data: "Tensor",
+                context_data: Dict) -> Tuple["Tensor", "Tensor"]:
         """
         Forward pass through the complete model
         

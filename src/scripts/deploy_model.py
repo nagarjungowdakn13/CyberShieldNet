@@ -11,6 +11,13 @@ import logging
 from pathlib import Path
 import shutil
 
+try:
+    import torch  # noqa: F401 - torch presence indicates ONNX export availability
+except Exception:
+    torch = None
+
+TORCH_AVAILABLE = torch is not None
+
 from cybershieldnet.models.model_manager import ModelManager
 from cybershieldnet.utils.helpers import ConfigManager
 
@@ -18,6 +25,17 @@ logger = logging.getLogger(__name__)
 
 
 def export_model_to_onnx(model_name: str, model_path: str, out_dir: str = 'deploy') -> str:
+    if not Path(model_path).exists():
+        raise FileNotFoundError(f"Model file not found: {model_path}")
+
+    if not TORCH_AVAILABLE:
+        logger.warning("PyTorch not available. Skipping ONNX export and copying original model instead.")
+        out_dirp = Path(out_dir)
+        out_dirp.mkdir(parents=True, exist_ok=True)
+        dest = out_dirp / Path(model_path).name
+        shutil.copy(model_path, dest)
+        return str(dest)
+
     cfg_mgr = ConfigManager()
     cfg = cfg_mgr.get_config('deployment_config') if Path('config/deployment_config.yaml').exists() else {}
 
