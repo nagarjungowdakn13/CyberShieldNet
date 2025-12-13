@@ -1,0 +1,61 @@
+data_sources:
+  network_traffic:
+    enabled: true
+    format: "netflow"
+    volume_per_day: "850GB"
+    velocity: "real-time"
+
+  security_logs:
+    enabled: true
+    formats: ["cef", "leef", "json", "csv"]
+    volume_per_day: "420GB"
+    velocity: "continuous"
+
+  threat_feeds:
+    enabled: true
+    formats: ["stix", "taxii", "json"]
+    volume_per_day: "75GB"
+    velocity: "hourly"
+
+  dark_web_intel:
+    enabled: true
+    formats: ["html", "json", "text"]
+    volume_per_day: "25GB"
+    velocity: "daily"
+
+  vulnerability_data:
+    enabled: true
+    formats: ["cve", "cwe", "custom"]
+    volume_per_day: "15GB"
+    velocity: "daily"
+
+  asset_inventory:
+    enabled: true
+    formats: ["cmdb", "discovery"]
+    volume_per_day: "8GB"
+    velocity: "real-time"
+
+processing:
+  batch_size: 1000
+  window_size: 3600 # 1 hour
+  overlap: 300 # 5 minutes
+
+  validation:
+    schema_validation: true
+    anomaly_detection: true
+    data_quality_threshold: 0.95
+
+  enrichment:
+    external_sources: 35
+    geolocation: true
+    reputation_scoring: true
+
+storage:
+  raw_data_retention: 30 # days
+  processed_data_retention: 365 # days
+  model_artifacts_retention: 90 # days
+
+  compression:
+    enabled: true
+    algorithm: "gzip"
+    level: 6

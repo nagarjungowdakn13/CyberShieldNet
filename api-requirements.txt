@@ -1,0 +1,4 @@
+uvicorn==0.37.0
+starlette==0.38.0
+prometheus-client==0.20.0
+python-dotenv==1.0.0

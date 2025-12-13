@@ -1,0 +1,46 @@
+training:
+  data_split:
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+    random_state: 42
+
+  optimization:
+    optimizer: "adamw"
+    learning_rate: 0.001
+    weight_decay: 0.01
+    momentum: 0.9
+
+  scheduling:
+    scheduler: "cosine"
+    warmup_epochs: 10
+    min_lr: 1e-6
+
+  regularization:
+    dropout: 0.3
+    batch_norm: true
+    l2_penalty: 0.01
+
+  early_stopping:
+    patience: 25
+    min_delta: 0.001
+    restore_best_weights: true
+
+  checkpoint:
+    save_best_only: true
+    monitor: "val_loss"
+    mode: "min"
+
+evaluation:
+  metrics:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1"
+    - "auc_roc"
+    - "mcc"
+
+  thresholds:
+    accuracy: 0.95
+    false_positive_rate: 0.1
+    detection_time: 100 # ms

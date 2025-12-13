@@ -1,0 +1,67 @@
+model:
+  name: "CyberShieldNet"
+  version: "1.0.0"
+
+  tgcf:
+    graph_layers: 3
+    hidden_dims: [256, 128, 64]
+    lstm_hidden_size: 128
+    lstm_layers: 2
+    dropout_rate: 0.3
+    activation: "relu"
+
+  drpa:
+    risk_decay_factor: 0.85
+    similarity_threshold: 0.7
+    propagation_depth: 5
+    context_weight: 0.15
+    weights:
+      threat_probability: 0.4
+      impact: 0.3
+      vulnerability: 0.2
+      context: 0.1
+
+  ensemble:
+    base_models: 7
+    adaptation_rate: 0.1
+    update_frequency: 3600 # 1 hour in seconds
+
+  training:
+    optimizer: "adamw"
+    learning_rate: 0.001
+    batch_size: 512
+    epochs: 200
+    weight_decay: 0.01
+    early_stopping_patience: 25
+
+  adversarial_defense:
+    enabled: true
+    adversarial_training: true
+    input_sanitization: true
+    model_diversity: true
+    pgd_epsilon: 0.1
+    pgd_steps: 10
+
+  explainability:
+    shap_enabled: true
+    attention_mechanisms: true
+    temporal_visualization: true
+
+data:
+  modalities:
+    temporal: true
+    structural: true
+    behavioral: true
+    contextual: true
+    threat_intel: true
+    asset: true
+
+  preprocessing:
+    normalization: "standard"
+    handle_missing: "impute"
+    feature_scaling: true
+
+deployment:
+  real_time_threshold: 100 # milliseconds
+  max_batch_size: 1000
+  model_update_frequency: 86400 # 24 hours
