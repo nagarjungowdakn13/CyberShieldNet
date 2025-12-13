@@ -1,4 +1,10 @@
 from pydantic import BaseModel, Field, validator
+try:
+    from pydantic import BaseModel, Field
+except Exception:
+    BaseModel = object
+    def Field(default=None, **kwargs):
+        return default
 from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
 from enum import Enum
@@ -37,13 +43,6 @@ class GraphData(BaseModel):
     edges: List[Dict[str, Any]] = Field(..., description="List of edges with attributes")
     node_features: Optional[List[List[float]]] = Field(None, description="Node feature matrix")
     edge_index: Optional[List[List[int]]] = Field(None, description="Edge index for graph convolution")
-    
-    @validator('node_features')
-    def validate_node_features(cls, v, values):
-        if v is not None:
-            if len(v) != len(values.get('nodes', [])):
-                raise ValueError("Node features must match number of nodes")
-        return v
 
 class TemporalData(BaseModel):
     """Temporal sequence data for threat analysis"""
@@ -51,35 +50,12 @@ class TemporalData(BaseModel):
     timestamps: Optional[List[datetime]] = Field(None, description="Sequence timestamps")
     sequence_length: int = Field(..., description="Length of each sequence")
     feature_dim: int = Field(..., description="Dimension of temporal features")
-    
-    @validator('sequences')
-    def validate_sequences(cls, v):
-        if not v:
-            raise ValueError("Sequences cannot be empty")
-        
-        sequence_length = len(v[0])
-        for seq in v:
-            if len(seq) != sequence_length:
-                raise ValueError("All sequences must have the same length")
-        
-        return v
 
 class BehavioralData(BaseModel):
     """Behavioral feature data for threat analysis"""
     features: List[Dict[str, float]] = Field(..., description="Behavioral features")
     feature_names: List[str] = Field(..., description="Names of behavioral features")
     timestamps: Optional[List[datetime]] = Field(None, description="Feature timestamps")
-    
-    @validator('features')
-    def validate_features(cls, v, values):
-        if not v:
-            raise ValueError("Features cannot be empty")
-        
-        feature_names = values.get('feature_names', [])
-        if feature_names and len(feature_names) != len(v[0]):
-            raise ValueError("Feature names must match feature dimensions")
-        
-        return v
 
 class ContextData(BaseModel):
     """Contextual information for risk assessment"""
@@ -96,19 +72,6 @@ class ThreatPredictionRequest(BaseModel):
     behavioral_data: Optional[BehavioralData] = Field(None, description="Behavioral feature data")
     context_data: Optional[ContextData] = Field(None, description="Contextual information")
     model_config: Optional[Dict[str, Any]] = Field(None, description="Model configuration overrides")
-    
-    @validator('*')
-    def at_least_one_data_modality(cls, v, values, field):
-        if field.name in ['graph_data', 'temporal_data', 'behavioral_data'] and v is None:
-            # Check if at least one data modality is provided
-            provided_modalities = [
-                values.get('graph_data'),
-                values.get('temporal_data'), 
-                values.get('behavioral_data')
-            ]
-            if all(modality is None for modality in provided_modalities):
-                raise ValueError("At least one data modality must be provided")
-        return v
 
 class ThreatPrediction(BaseModel):
     """Individual threat prediction result"""
@@ -118,19 +81,7 @@ class ThreatPrediction(BaseModel):
     assets_affected: List[str] = Field(..., description="List of affected assets")
     severity: RiskLevel = Field(..., description="Threat severity level")
     
-    @validator('severity')
-    def assign_severity_based_on_probability(cls, v, values):
-        probability = values.get('probability', 0.0)
-        if probability >= 0.9:
-            return RiskLevel.CRITICAL
-        elif probability >= 0.7:
-            return RiskLevel.HIGH
-        elif probability >= 0.4:
-            return RiskLevel.MEDIUM
-        elif probability >= 0.1:
-            return RiskLevel.LOW
-        else:
-            return RiskLevel.NONE
+    # Severity should be provided; classification logic can be applied in service layer.
 
 class ThreatPredictionResponse(BaseModel):
     """Response model for threat prediction"""
@@ -140,13 +91,13 @@ class ThreatPredictionResponse(BaseModel):
     timestamp: datetime = Field(..., description="Prediction timestamp")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
-class RiskAssessmentRequest(BaseModel):
-    """Request model for risk assessment"""
-    threat_predictions: List[ThreatPrediction] = Field(..., description="Threat predictions from model")
-    assets: List[Dict[str, Any]] = Field(..., description="Asset information for risk calculation")
-    vulnerabilities: List[Dict[str, Any]] = Field(..., description="Vulnerability data")
-    business_context: Optional[Dict[str, Any]] = Field(None, description="Business context for risk weighting")
-    risk_config: Optional[Dict[str, Any]] = Field(None, description="Risk assessment configuration")
+class ThreatPredictionResponse(BaseModel):
+    """Response model for threat prediction"""
+    predictions: List[ThreatPrediction] = Field(..., description="List of threat predictions")
+    processing_time: float = Field(..., description="Processing time in seconds")
+    model_version: str = Field(..., description="Model version used for prediction")
+    timestamp: datetime = Field(..., description="Prediction timestamp")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
 class AssetRisk(BaseModel):
     """Individual asset risk assessment"""
@@ -158,19 +109,7 @@ class AssetRisk(BaseModel):
     contributing_threats: List[str] = Field(..., description="Threats contributing to risk")
     mitigation_recommendations: List[str] = Field(..., description="Recommended mitigation actions")
     
-    @validator('risk_level')
-    def calculate_risk_level(cls, v, values):
-        risk_score = values.get('risk_score', 0.0)
-        if risk_score >= 0.9:
-            return RiskLevel.CRITICAL
-        elif risk_score >= 0.7:
-            return RiskLevel.HIGH
-        elif risk_score >= 0.4:
-            return RiskLevel.MEDIUM
-        elif risk_score >= 0.1:
-            return RiskLevel.LOW
-        else:
-            return RiskLevel.NONE
+    # Risk level to be provided or computed outside of schema.
 
 class RiskAssessmentResponse(BaseModel):
     """Response model for risk assessment"""

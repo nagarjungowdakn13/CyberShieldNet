@@ -1,0 +1,4 @@
+[console_scripts]
+cybershieldnet-evaluate = scripts.evaluate_model:main
+cybershieldnet-serve = scripts.deploy_model:main
+cybershieldnet-train = scripts.train_model:main
