@@ -1,3 +1,53 @@
+Metadata-Version: 2.4
+Name: cybershieldnet
+Version: 1.0.0
+Summary: Multi-Modal Fusion Framework for Predictive Cyber Threat Intelligence
+Home-page: https://github.com/nagarjungowda/CyberShieldNet
+Author: Nagarjun Gowda K N
+Author-email: Nagarjun Gowda K N <nagarjun@gmail.com>
+License: MIT
+Keywords: cybersecurity,threat-intelligence,machine-learning,deep-learning
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Security
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: torch>=2.0.0
+Requires-Dist: torch-geometric>=2.3.0
+Requires-Dist: numpy>=1.21.0
+Requires-Dist: pandas>=1.3.0
+Requires-Dist: scikit-learn>=1.0.0
+Requires-Dist: scipy>=1.7.0
+Requires-Dist: networkx>=2.6.0
+Requires-Dist: matplotlib>=3.5.0
+Requires-Dist: seaborn>=0.11.0
+Requires-Dist: plotly>=5.0.0
+Requires-Dist: shap>=0.41.0
+Requires-Dist: captum>=0.5.0
+Requires-Dist: fastapi>=0.95.0
+Requires-Dist: uvicorn>=0.21.0
+Requires-Dist: pydantic>=1.10.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: flake8>=6.0.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: pre-commit>=3.0.0; extra == "dev"
+Provides-Extra: docs
+Requires-Dist: sphinx>=7.0.0; extra == "docs"
+Requires-Dist: sphinx-rtd-theme>=1.3.0; extra == "docs"
+Dynamic: author
+Dynamic: home-page
+Dynamic: requires-python
+
 # CyberShieldNet: Multi-Modal Fusion Framework for Predictive Threat Intelligence
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -78,44 +128,6 @@ Project Link: https://github.com/nagarjungowdakn13/CyberShieldNet
 
 text
 
-## Running the API
-
-Use Uvicorn to run the application:
-
-```bash
-uvicorn src.cybershieldnet.api.fastapi:app --host 0.0.0.0 --port 8000
-```
-
-### Run Modes
-
-#### Python 3.14 API-only mode (Windows)
-
-If you face dependency issues on Python 3.14 (NumPy/torch wheels or FastAPI/Pydantic mismatches), run the lightweight Starlette server:
-
-```cmd
-cd /d "C:\Users\nagar\OneDrive\Desktop\Projects ^& Research\CyberShieldNet"
-"C:/Users/nagar/OneDrive/Desktop/Projects ^& Research/CyberShieldNet/.venv/Scripts/python.exe" -m pip install uvicorn starlette
-"C:/Users/nagar/OneDrive/Desktop/Projects ^& Research/CyberShieldNet/.venv/Scripts/python.exe" -m uvicorn tools.starlette_server:app --host 127.0.0.1 --port 8000
-```
-
-Endpoints:
-
-- `GET /health` → returns `ok`
-- `GET /` → basic app info
-- `POST /predict` → dummy risk score, echoes input
-
-#### Full ML mode (Python 3.10)
-
-Use Python 3.10 with prebuilt wheels and install ML stack:
-
-```cmd
-cd /d "C:\Users\nagar\OneDrive\Desktop\Projects & Research\CyberShieldNet"
-".venv\Scripts\python.exe" -m pip install -r ml-requirements.txt
-".venv\Scripts\python.exe" -m uvicorn src.cybershieldnet.api.fastapi:app --host 127.0.0.1 --port 8000
-```
-
-Metrics: visit `http://127.0.0.1:8000/metrics`. Version: `http://127.0.0.1:8000/version`.
-
 ### `requirements.txt`
 
 ```txt
@@ -153,7 +165,3 @@ tqdm>=4.64.0
 pyyaml>=6.0
 python-dotenv>=1.0.0
 ```
-
-Feature flags:
-
-- Set `CSN_ENABLE_COMPLEX=1` to enable advanced endpoints (requires full dependencies).
